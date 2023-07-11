@@ -46,7 +46,7 @@ function appendCharacter({ lines, charLines, spacing }) {
 }
 
 function layout(str, dict, option) {
-  const { spacing, maxLineWidth } = option;
+  const { spacing = 1, maxLineWidth } = option;
   const chars = str.split("");
   const newChars = chars.map((c) => c.toLowerCase());
 
@@ -55,9 +55,12 @@ function layout(str, dict, option) {
     lines.push(dict[c]?.lines);
   }
   const prints = [[...lines[0]]];
+  let lineWid = dict[newChars[0]]?.width;
 
   for (let i = 1; i < lines.length; i++) {
-    if (prints[prints.length - 1][0].length <= maxLineWidth) {
+    const c = newChars[i];
+    lineWid += dict[c]?.width;
+    if (lineWid <= maxLineWidth) {
       prints[prints.length - 1] = appendCharacter({
         lines: prints[prints.length - 1],
         charLines: lines[i],
@@ -65,6 +68,8 @@ function layout(str, dict, option) {
       });
     } else {
       prints.push(lines[i]);
+      const c = newChars[i];
+      lineWid = dict[c]?.width;
     }
   }
   return prints.reduce((prev, i) => [...prev, ...i], []);
