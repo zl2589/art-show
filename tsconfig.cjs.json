@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",            // 输出 CJS 格式
+    "outDir": "dist/cjs",  
+    "declaration": true,          // 输出到 cjs 目录
+    "declarationDir": "dist/types",      // 类型文件也输出到 cjs
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  }
+}

@@ -1,12 +1,14 @@
+import { FontRender, Option } from "./typing";
+
 // calc the prefix space
-const prefixSpace = function (str) {
+const prefixSpace = function (str: string) {
   const matched = /^\s+/gu.exec(str);
 
   return matched ? matched[0].length : 0;
 };
 
 // calc the tail space
-const tailSpace = function (str) {
+const tailSpace = function (str: string) {
   const matched = /\s+$/gu.exec(str);
 
   return matched ? matched[0].length : 0;
@@ -14,7 +16,7 @@ const tailSpace = function (str) {
 
 // calc how many spaces need for indent for layout
 // overwise the gap between two characters will be different
-function calcIndent(lines, charLines) {
+function calcIndent(lines: string[], charLines: string[]) {
   // maximum indent that won't break the layout
   let minIndent = Infinity;
 
@@ -29,7 +31,7 @@ function calcIndent(lines, charLines) {
 }
 
 // append a new character and adjust the indent
-function appendCharacter({ lines, charLines, spacing }) {
+function appendCharacter({ lines, charLines, spacing }: { lines: string[], charLines: string[], spacing: number }) {
   const indent = calcIndent(lines, charLines);
 
   return lines.map((l, i) => {
@@ -45,12 +47,12 @@ function appendCharacter({ lines, charLines, spacing }) {
   });
 }
 
-function layout(str, dict, option) {
+export function layout(str: string, dict: Record<string, FontRender>, option: Option) {
   const { spacing = 1, maxLineWidth } = option;
   const chars = str.split("");
   const newChars = chars.map((c) => c.toLowerCase());
 
-  const lines = [];
+  const lines: string[][] = [];
   for (const c of newChars) {
     lines.push(dict[c]?.lines);
   }
@@ -74,5 +76,3 @@ function layout(str, dict, option) {
   }
   return prints.reduce((prev, i) => [...prev, ...i], []);
 }
-
-exports.layout = layout;

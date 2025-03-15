@@ -1,18 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 
-const BUILD_RAW_DIR = path.resolve(__dirname, "..", 'raw');
+// @ts-ignore
+const BUILD_RAW_DIR = path.resolve(__dirname, ".", "raw");
+const WRITE_DIR = path.resolve(__dirname, ".", "rawjs");
 
 // 解析字义
 function parseDefinition(line) {
-  let token = '';
+  let token = "";
   let defs = [];
   for (let char of line) {
-    if (char === ' ' && token) {
+    if (char === " " && token) {
       defs.push(token);
-      token = '';
+      token = "";
     }
-    if (char !== ' ') {
+    if (char !== " ") {
       token += char;
     }
   }
@@ -27,14 +29,17 @@ function parse(filePath) {
   try {
     fs.accessSync(filePath, fs.constants.R_OK);
   } catch (err) {
-    console.error('No Read access');
+    console.error("No Read access");
     return;
   }
   try {
-    const data = fs.readFileSync(filePath, 'utf-8');
-    const matched = /^(?<def>.+?)\n(?<char>[^]*)/u.exec(data);
+    const data = fs.readFileSync(filePath, "utf-8");
+    // const matched = /^(?<def>.+?)\n(?<char>[^]*)/u.exec(data);
+    const matched = /^(?<def>[^\n\r]+)[\r\n]{1,2}(?<char>[\s\S]+)/.exec(
+      data
+    );
 
-    if (!matched || !matched.groups?.def || !matched.groups.char) {
+    if (!matched || !matched?.groups?.def || !matched.groups.char) {
       throw Error("Can't parse the content. Its may be in wrong format.");
     }
 
@@ -47,13 +52,16 @@ function parse(filePath) {
       content,
     };
   } catch (err) {
-    console.log('文件读取失败');
+    console.log("文件读取失败");
     return;
   }
 }
 
 // 处理字型
-const arrayToString = (arr) => '[' + arr?.map((d) => (isNaN(d) ? `'${d}'` : d)).join(',') + ']';
+const arrayToString = (arr) =>
+  "[" +
+  arr?.map((d) => (typeof d === 'string' ? `'${d}'` : d)).join(",") +
+  "]";
 
 function handleFile(fontDir, cb) {
   const files = fs.readdirSync(fontDir);
@@ -71,16 +79,16 @@ function handleFile(fontDir, cb) {
   return ret;
 }
 
-function buildCharacterModules(fontDir, fontName) {
+function buildCharacterModules(fontDir, fontName, writeDir) {
   let parsedFonts = [];
-  const wFilePath = path.resolve(fontDir, `${fontName}.js`);
+  const wFilePath = path.resolve(writeDir, `${fontName}.js`);
 
   try {
     if (fs.existsSync(wFilePath)) {
       fs.unlinkSync(wFilePath);
     }
   } catch (err) {
-    console.log('删除文件失败');
+    console.log("删除文件失败");
   }
 
   handleFile(fontDir, (filePath) => {
@@ -103,22 +111,25 @@ function buildCharacterModules(fontDir, fontName) {
   const text = parsedFonts?.reduce((t, f, idx) => {
     return (
       t +
-      ('\n/**\n' +
+      ("\n/**\n" +
         f.content +
-        '\n*/\n' +
+        "\n*/\n" +
         `fonts[${idx}] = {\n` +
         `  defs:${arrayToString(f?.defs)},\n` +
         `  codes:${arrayToString(f?.codes)}\n` +
-        '};\n')
+        "};\n")
     );
-  }, '');
+  }, "");
 
   const moduleText =
-    'const fonts = [];\n' + text + 'module.exports.fonts = fonts;\n' + `module.exports.name = '${fontName}';\n`;
+    "const fonts = [];\n" +
+    text +
+    "module.exports.fonts = fonts;\n" +
+    `module.exports.name = '${fontName}';\n`;
   try {
-    fs.writeFileSync(wFilePath, moduleText, { flag: 'w+', encodeing: 'utf-8' });
+    fs.writeFileSync(wFilePath, moduleText, { flag: "w+", encoding: "utf-8" });
   } catch (err) {
-    console.log('写入文件失败');
+    console.log("写入文件失败");
   }
 }
 
@@ -126,5 +137,5 @@ function buildCharacterModules(fontDir, fontName) {
 const rawDirs = fs.readdirSync(BUILD_RAW_DIR);
 rawDirs.forEach((dir) => {
   const fontDir = path.resolve(BUILD_RAW_DIR, dir);
-  buildCharacterModules(fontDir, dir);
+  buildCharacterModules(fontDir, dir, WRITE_DIR);
 });

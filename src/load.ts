@@ -1,4 +1,7 @@
-function calcCharacterWidth(lines) {
+import path from "path";
+import { FontRender, FontResolve, Option } from "./typing";
+
+function calcCharacterWidth(lines: string[]) {
   let minLeft = Infinity;
   let maxRight = -Infinity;
 
@@ -29,7 +32,7 @@ function calcCharacterWidth(lines) {
   return maxRight - minLeft + 1;
 }
 
-function formatCharacter(info, maxCharHeight) {
+function formatCharacter(info: FontResolve, maxCharHeight: number) {
   const { codes, defs } = info;
   const content = codes.reduce((text, c) => text + String.fromCharCode(c), "");
   const lines = content.split("\n");
@@ -56,15 +59,22 @@ function formatCharacter(info, maxCharHeight) {
   return infoFont;
 }
 
-function loadCharacters(fontFamily = "big") {
+async function loadCharacters(fontFamily = "big") {
+  if (!['alpha', 'big', 'crazy'].includes(fontFamily)) {
+    throw Error(`不支持该字体. \n`);
+  }
   let fontModule;
   try {
-    fontModule = require(`../raw/${fontFamily}/${fontFamily}.js`);
+    // @vite-ignore
+    fontModule = await import(`../rawjs/${fontFamily}.js`);
   } catch (e) {
-    throw Error(`FONT NOT FOUND (Font Family Default). \n`);
+    throw Error(`FONT NOT FOUND (Font Family ${fontFamily}). \n`);
   }
 
-  const fonts = fontModule.fonts;
+  const fonts: FontResolve[] = fontModule.fonts;
+  if (!fonts || !Array.isArray(fonts)) {
+    throw new Error("Invalid font module structure.");
+  }
 
   const maxCharHeight = fonts.reduce(
     (max, f) => Math.max(f.codes.filter((c) => c === 10).length + 1, max),
@@ -74,10 +84,10 @@ function loadCharacters(fontFamily = "big") {
   return fonts.map((f) => formatCharacter(f, maxCharHeight));
 }
 
-const load = (option) => {
-  const characters = loadCharacters(option?.fontFamily);
+export const load = async (option: Option) => {
+  const characters = await loadCharacters(option?.fontFamily);
 
-  let fontMap = {};
+  let fontMap: Record<string, FontRender> = {};
   characters
     .reduce((pre, next) => [...pre, ...next], [])
     .forEach((c) => {
@@ -85,5 +95,3 @@ const load = (option) => {
     });
   return fontMap;
 };
-
-exports.load = load;
