@@ -61,7 +61,7 @@ function formatCharacter(info: FontResolve, maxCharHeight: number) {
 
 async function loadCharacters(fontFamily = "big") {
   if (!['alpha', 'big', 'crazy'].includes(fontFamily)) {
-    throw Error(`不支持该字体. \n`);
+    throw Error(`Font Family ${fontFamily} is not supported. \n`);
   }
   let fontModule;
   try {

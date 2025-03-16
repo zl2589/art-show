@@ -111,21 +111,18 @@ function buildCharacterModules(fontDir, fontName, writeDir) {
   const text = parsedFonts?.reduce((t, f, idx) => {
     return (
       t +
-      ("\n/**\n" +
-        f.content +
-        "\n*/\n" +
-        `fonts[${idx}] = {\n` +
+      (`fonts[${idx}] = {\n` +
         `  defs:${arrayToString(f?.defs)},\n` +
         `  codes:${arrayToString(f?.codes)}\n` +
         "};\n")
     );
   }, "");
 
-  const moduleText =
-    "const fonts = [];\n" +
-    text +
-    "module.exports.fonts = fonts;\n" +
-    `module.exports.name = '${fontName}';\n`;
+  const moduleText = `const fonts = [];
+${text}
+module.exports.fonts = fonts;
+module.exports.name = '${fontName}'
+`;
   try {
     fs.writeFileSync(wFilePath, moduleText, { flag: "w+", encoding: "utf-8" });
   } catch (err) {

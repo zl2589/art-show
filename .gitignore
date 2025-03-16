@@ -1,5 +1,5 @@
 dist/
-
+rawjs/*
 .vscode
 
 package-lock.json
