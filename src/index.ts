@@ -11,7 +11,7 @@ const defaultOption = {
 };
 
 
-async function createArts(str: string, opt?: Partial<Option>) {
+export async function createArts(str: string, opt?: Partial<Option>) {
   const option = {
     ...defaultOption,
     ...opt,
@@ -26,4 +26,4 @@ async function createArts(str: string, opt?: Partial<Option>) {
   });
 }
 
-export default { createArts };
+export type { Option };
