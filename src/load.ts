@@ -1,4 +1,3 @@
-import path from "path";
 import { FontRender, FontResolve, Option } from "./typing";
 
 function calcCharacterWidth(lines: string[]) {
@@ -60,28 +59,28 @@ function formatCharacter(info: FontResolve, maxCharHeight: number) {
 }
 
 async function loadCharacters(fontFamily = "big") {
-  if (!['alpha', 'big', 'crazy'].includes(fontFamily)) {
+  if (!["alpha", "big", "crazy"].includes(fontFamily)) {
     throw Error(`Font Family ${fontFamily} is not supported. \n`);
   }
-  let fontModule;
+  let _fonts: FontResolve[];
   try {
     // @vite-ignore
-    fontModule = await import(`../rawjs/${fontFamily}.js`);
+    const { fonts, name } = await import(`../rawjs/${fontFamily}.js`);
+    _fonts = fonts;
   } catch (e) {
     throw Error(`FONT NOT FOUND (Font Family ${fontFamily}). \n`);
   }
 
-  const fonts: FontResolve[] = fontModule.fonts;
-  if (!fonts || !Array.isArray(fonts)) {
+  if (!_fonts || !Array.isArray(_fonts)) {
     throw new Error("Invalid font module structure.");
   }
 
-  const maxCharHeight = fonts.reduce(
+  const maxCharHeight = _fonts.reduce(
     (max, f) => Math.max(f.codes.filter((c) => c === 10).length + 1, max),
     0
   );
 
-  return fonts.map((f) => formatCharacter(f, maxCharHeight));
+  return _fonts.map((f) => formatCharacter(f, maxCharHeight));
 }
 
 export const load = async (option: Option) => {

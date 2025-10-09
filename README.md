@@ -79,7 +79,8 @@ createArts("nanchen123", { spacing: 10, maxLineWidth: 30 });
 
 ## Feature
 * 此次新增alpha字体包，并基于typescript重构了项目，便于维护。
-* 增加 ESM 和 CommonJS 支持。
+* v1.1.12 增加 ESM 和 CommonJS 支持。
+* v1.1.13 修改字体构建逻辑。
 
 ## Fonts
 * alpha

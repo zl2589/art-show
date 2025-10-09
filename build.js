@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // @ts-ignore
 const BUILD_RAW_DIR = path.resolve(__dirname, ".", "raw");
@@ -35,9 +35,7 @@ function parse(filePath) {
   try {
     const data = fs.readFileSync(filePath, "utf-8");
     // const matched = /^(?<def>.+?)\n(?<char>[^]*)/u.exec(data);
-    const matched = /^(?<def>[^\n\r]+)[\r\n]{1,2}(?<char>[\s\S]+)/.exec(
-      data
-    );
+    const matched = /^(?<def>[^\n\r]+)[\r\n]{1,2}(?<char>[\s\S]+)/.exec(data);
 
     if (!matched || !matched?.groups?.def || !matched.groups.char) {
       throw Error("Can't parse the content. Its may be in wrong format.");
@@ -56,12 +54,6 @@ function parse(filePath) {
     return;
   }
 }
-
-// 处理字型
-const arrayToString = (arr) =>
-  "[" +
-  arr?.map((d) => (typeof d === 'string' ? `'${d}'` : d)).join(",") +
-  "]";
 
 function handleFile(fontDir, cb) {
   const files = fs.readdirSync(fontDir);
@@ -108,21 +100,17 @@ function buildCharacterModules(fontDir, fontName, writeDir) {
     }
   });
 
-  const text = parsedFonts?.reduce((t, f, idx) => {
-    return (
-      t +
-      (`fonts[${idx}] = {\n` +
-        `  defs:${arrayToString(f?.defs)},\n` +
-        `  codes:${arrayToString(f?.codes)}\n` +
-        "};\n")
-    );
-  }, "");
+  const fonts = parsedFonts?.reduce((t, f) => {
+    return t.concat({
+      defs: f?.defs,
+      codes: f?.codes,
+    });
+  }, []);
+  const text = JSON.stringify(fonts);
 
-  const moduleText = `const fonts = [];
-${text}
-module.exports.fonts = fonts;
-module.exports.name = '${fontName}'
-`;
+  const moduleText = `export const fonts = ${text};
+  export const name = '${fontName}';
+  `;
   try {
     fs.writeFileSync(wFilePath, moduleText, { flag: "w+", encoding: "utf-8" });
   } catch (err) {
